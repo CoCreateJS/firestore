@@ -1,11 +1,28 @@
-const { Firestore } = require("@google-cloud/firestore");
-const {
+/********************************************************************************
+ * Copyright (C) 2026 CoCreate and Contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ ********************************************************************************/
+
+import { Firestore } from "@google-cloud/firestore";
+import {
 	dotNotationToObject,
 	queryData,
 	searchData,
 	sortData,
 	isValidDate
-} = require("@cocreate/utils");
+} from "@cocreate/utils";
 
 const organizations = {};
 
@@ -16,7 +33,6 @@ const organizations = {};
  */
 async function dbClient(data) {
 	const storageUrl = data.storageUrl || data.url;
-	const storageName = data.storageName || data.provider || "firestore";
 
 	if (storageUrl) {
 		if (!organizations[data.organization_id]) {
@@ -127,7 +143,7 @@ process.on("orgDeleted", (organization_id) => {
 /**
  * Universal router matching the standard CoCreate pipeline signature.
  */
-function send(data) {
+export function send(data) {
 	let [type, method] = data.method.split(".");
 	if (type === "database") return database(method, data);
 	if (type === "array") return array(method, data);
@@ -146,7 +162,7 @@ function database(method, data) {
 
 			try {
 				const db = await dbClient(data);
-				if (!db || db.status === false) return data;
+				if (!db || db.status === false) return resolve(data);
 
 				if (method === "read") {
 					// Firestore is serverless and generally operates on a single default schema database per context.
@@ -213,7 +229,7 @@ function array(method, data) {
 
 			try {
 				const db = await dbClient(data);
-				if (!db || db.status === false) return data;
+				if (!db || db.status === false) return resolve(data);
 
 				if (data.request) data.array = data.request;
 
@@ -373,7 +389,7 @@ function object(method, data) {
 		async (resolve, reject) => {
 			try {
 				const db = await dbClient(data);
-				if (!db || db.status === false) return data;
+				if (!db || db.status === false) return resolve(data);
 
 				let type = "object";
 				let documents = [];
@@ -863,4 +879,4 @@ function errorHandler(data, error, database, array) {
 	}
 }
 
-module.exports = { send };
+export default { send };
