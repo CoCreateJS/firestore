@@ -12,26 +12,43 @@ const organizations = {};
 /**
  * Dynamically resolves or caches a long-lived Firestore database client connection.
  * Caches the connection promise to prevent duplicate authentication handshakes.
- * Normalizes custom credential protocols directly out of standard CoCreate storageUrls.
+ * Normalizes custom credential protocols directly out of standard CoCreate storageUrls or urls.
  */
 async function dbClient(data) {
-	if (data.storageUrl) {
+	const storageUrl = data.storageUrl || data.url;
+	const storageName = data.storageName || data.provider || "firestore";
+
+	if (storageUrl) {
 		if (!organizations[data.organization_id]) {
 			organizations[data.organization_id] = {};
 		}
 		try {
-			if (!organizations[data.organization_id][data.storageUrl]) {
+			if (!organizations[data.organization_id][storageUrl]) {
 				const connectionPromise = (async () => {
 					let config = {};
 
-					// Option A: The Credentials Path URL (e.g. firestore:///path/to/credentials.json)
-					if (data.storageUrl.startsWith("firestore:///")) {
-						const filePath = data.storageUrl.replace("firestore://", "");
+					// Option A: The Structured Credentials Object (Highly recommended)
+					if (typeof storageUrl === "object" && storageUrl !== null) {
+						const projectId = storageUrl.projectId || storageUrl.project_id;
+						const clientEmail = storageUrl.clientEmail || storageUrl.client_email;
+						const privateKey = storageUrl.privateKey || storageUrl.private_key;
+
+						config = {
+							projectId,
+							credentials: {
+								client_email: clientEmail,
+								private_key: privateKey ? privateKey.replace(/\\n/g, "\n") : undefined
+							}
+						};
+					}
+					// Option B: The Credentials Path URL (e.g. firestore:///path/to/credentials.json)
+					else if (typeof storageUrl === "string" && storageUrl.startsWith("firestore:///")) {
+						const filePath = storageUrl.replace("firestore://", "");
 						config = { keyFilename: filePath };
 					}
-					// Option B: Query Params Encoded URI (e.g. firestore://project-id?client_email=...&private_key=...)
-					else if (data.storageUrl.startsWith("firestore://")) {
-						const urlParsed = new URL(data.storageUrl);
+					// Option C: Query Params Encoded URI (e.g. firestore://project-id?client_email=...&private_key=...)
+					else if (typeof storageUrl === "string" && storageUrl.startsWith("firestore://")) {
+						const urlParsed = new URL(storageUrl);
 						const projectId = urlParsed.host || urlParsed.hostname;
 						const clientEmail = urlParsed.searchParams.get("client_email");
 						const privateKey = urlParsed.searchParams.get("private_key");
@@ -57,21 +74,21 @@ async function dbClient(data) {
 					return client;
 				})();
 
-				organizations[data.organization_id][data.storageUrl] = connectionPromise;
+				organizations[data.organization_id][storageUrl] = connectionPromise;
 			}
 
 			// Await connection resolution safely
-			return await organizations[data.organization_id][data.storageUrl];
+			return await organizations[data.organization_id][storageUrl];
 		} catch (error) {
 			console.error(
-				`${data.organization_id}: storageUrl ${data.storageUrl} failed to connect to Firestore`
+				`${data.organization_id}: Firestore failed to connect`
 			);
 			errorHandler(data, error);
 			return { status: false };
 		}
 	}
 
-	errorHandler(data, "missing StorageUrl");
+	errorHandler(data, "missing Firestore Connection URL/Credentials");
 	return;
 }
 
@@ -121,6 +138,7 @@ function send(data) {
  * "database" operations mapped to Firestore Databases.
  */
 function database(method, data) {
+	const storageName = data.storageName || data.provider || "firestore";
 	return new Promise(
 		async (resolve, reject) => {
 			let type = "database";
@@ -147,13 +165,13 @@ function database(method, data) {
 						if (isFilter) {
 							databaseArray.push({
 								database: dbObj,
-								storage: data.storageName
+								storage: storageName
 							});
 						}
 					} else {
 						databaseArray.push({
 							database: dbObj,
-							storage: data.storageName
+							storage: storageName
 						});
 					}
 					resolve(createData(data, databaseArray, type));
@@ -187,6 +205,7 @@ function database(method, data) {
  * "array" operations mapped to Firestore Collections.
  */
 function array(method, data) {
+	const storageName = data.storageName || data.provider || "firestore";
 	return new Promise(
 		async (resolve, reject) => {
 			let type = "array";
@@ -220,14 +239,14 @@ function array(method, data) {
 									arrayArray.push({
 										name: col.id,
 										database,
-										storage: data.storageName
+										storage: storageName
 									});
 								}
 							} else {
 								arrayArray.push({
 									name: col.id,
 									database,
-									storage: data.storageName
+									storage: storageName
 								});
 							}
 						}
@@ -260,7 +279,7 @@ function array(method, data) {
 								arrayArray.push({
 									name: array,
 									database,
-									storage: data.storageName
+									storage: storageName
 								});
 
 								arraysLength -= 1;
@@ -295,7 +314,7 @@ function array(method, data) {
 										name: newName,
 										oldName: oldName,
 										database,
-										storage: data.storageName
+										storage: storageName
 									});
 
 									arraysLength -= 1;
@@ -319,7 +338,7 @@ function array(method, data) {
 									arrayArray.push({
 										name: array,
 										database,
-										storage: data.storageName
+										storage: storageName
 									});
 
 									arraysLength -= 1;
@@ -349,6 +368,7 @@ function array(method, data) {
  * "object" operations mapped to Firestore Documents.
  */
 function object(method, data) {
+	const storageName = data.storageName || data.provider || "firestore";
 	return new Promise(
 		async (resolve, reject) => {
 			try {
@@ -371,7 +391,7 @@ function object(method, data) {
 
 					for (let array of arrays) {
 						const reference = {
-							$storage: data.storageName,
+							$storage: storageName,
 							$database: database,
 							$array: array
 						};
@@ -396,7 +416,7 @@ function object(method, data) {
 							if (!Array.isArray($database)) $database = [data[type][i].$database];
 							if (!Array.isArray($array)) $array = [data[type][i].$array];
 
-							if (!$storage.includes(data.storageName)) $storage.push(data.storageName);
+							if (!$storage.includes(storageName)) $storage.push(storageName);
 							if (!$database.includes(database)) $database.push(database);
 							if (!$array.includes(array)) $array.push(array);
 
@@ -456,7 +476,6 @@ function object(method, data) {
 									queryRef = queryRef.limit(data.$filter.limit);
 								}
 								if (data.$filter && typeof data.$filter.index === "number") {
-									// Standard offset queries are supported but startAt is normally preferred in production
 									queryRef = queryRef.offset(data.$filter.index);
 								}
 
