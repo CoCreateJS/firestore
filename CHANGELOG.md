@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/CoCreate-app/CoCreate-firestore/compare/v1.2.0...v1.3.0) (2026-07-19)
+
+
+### Features
+
+* Revamp README.md to reflect Firestore integration and enhance documentation ([63573db](https://github.com/CoCreate-app/CoCreate-firestore/commit/63573db61f4744e7d2cd7f104a35de23ffd2534e))
+
 # [1.2.0](https://github.com/CoCreate-app/CoCreate-firestore/compare/v1.1.0...v1.2.0) (2026-07-18)
 
 
