@@ -32,7 +32,7 @@ const organizations = {};
  * Normalizes custom credential protocols directly out of standard CoCreate storageUrls or urls.
  */
 async function dbClient(data) {
-	const storageUrl = data.storageUrl || data.url;
+    const storageUrl = data.storageConfig?.url
 
 	if (storageUrl) {
 		if (!organizations[data.organization_id]) {

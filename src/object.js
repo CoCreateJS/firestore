@@ -16,7 +16,7 @@ import {
  * "object" operations mapped to Firestore Documents.
  */
 function object(method, data) {
-    const storageName = data.storageName || data.provider || "firestore";
+    const storageName = data.storageConfig?.name;
     return new Promise(
         async (resolve, reject) => {
             try {

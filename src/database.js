@@ -16,7 +16,7 @@ import {
  * "database" operations mapped to Firestore Databases.
  */
 function database(method, data) {
-    const storageName = data.storageName || data.provider || "firestore";
+    const storageName = data.storageConfig?.name;
     return new Promise(
         async (resolve, reject) => {
             let type = "database";

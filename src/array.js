@@ -16,7 +16,7 @@ import {
  * "array" operations mapped to Firestore Collections.
  */
 function array(method, data) {
-    const storageName = data.storageName || data.provider || "firestore";
+    const storageName = data.storageConfig?.name;
     return new Promise(
         async (resolve, reject) => {
             let type = "array";
