@@ -45,10 +45,10 @@
     "./installer": "./installer/firestore.installer.js"
   },
   "devDependencies": {
-    "@cocreate/webpack": "^1.6.2"
+    "@cocreate/webpack": "^1.7.0"
   },
   "dependencies": {
-    "@cocreate/utils": "^1.44.3",
+    "@cocreate/utils": "^1.46.0",
     "@google-cloud/firestore": "^7.5.0"
   }
 }
