@@ -44,8 +44,8 @@ function array(method, data) {
                         for (let col of collections) {
                             const tableObj = { name: col.id };
 
-                            if (data.$filter && data.$filter.query) {
-                                let isFilter = queryData(tableObj, data.$filter.query);
+                            if (data.filter && data.filter.query) {
+                                let isFilter = queryData(tableObj, data.filter.query);
                                 if (isFilter) {
                                     arrayArray.push({
                                         name: col.id,
