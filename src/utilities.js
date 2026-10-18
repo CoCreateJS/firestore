@@ -29,17 +29,27 @@ const organizations = {};
 /**
  * Dynamically resolves or caches a long-lived Firestore database client connection.
  * Caches the connection promise to prevent duplicate authentication handshakes.
- * Normalizes custom credential protocols directly out of standard CoCreate storageUrls or urls.
+ * Accepts storage API credentials or a bootstrap URL.
  */
 async function dbClient(data) {
-    const storageUrl = data.storageConfig?.url
+	const storage = data.storageConfig;
+	const storageUrl = storage?.projectId && storage?.clientEmail && storage?.privateKey
+		? {
+			projectId: storage.projectId,
+			clientEmail: storage.clientEmail,
+			privateKey: storage.privateKey
+		}
+		: storage?.url;
 
 	if (storageUrl) {
+		const connectionKey = typeof storageUrl === "object"
+			? JSON.stringify(storageUrl)
+			: storageUrl;
 		if (!organizations[data.organization_id]) {
 			organizations[data.organization_id] = {};
 		}
 		try {
-			if (!organizations[data.organization_id][storageUrl]) {
+			if (!organizations[data.organization_id][connectionKey]) {
 				const connectionPromise = (async () => {
 					let config = {};
 
@@ -90,11 +100,11 @@ async function dbClient(data) {
 					return client;
 				})();
 
-				organizations[data.organization_id][storageUrl] = connectionPromise;
+				organizations[data.organization_id][connectionKey] = connectionPromise;
 			}
 
 			// Await connection resolution safely
-			return await organizations[data.organization_id][storageUrl];
+			return await organizations[data.organization_id][connectionKey];
 		} catch (error) {
 			console.error(
 				`${data.organization_id}: Firestore failed to connect`
