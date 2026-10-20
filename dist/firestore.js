@@ -1923,7 +1923,7 @@ class DocumentChange {
     /**
      * @private
      *
-     * @param {string} type 'added' | 'removed' | 'updated'.
+     * @param {string} type 'added' | 'removed' | 'modified'.
      * @param {QueryDocumentSnapshot} document The document.
      * @param {number} oldIndex The index in the documents array prior to this
      * change.
@@ -1937,7 +1937,7 @@ class DocumentChange {
         this._newIndex = newIndex;
     }
     /**
-     * The type of change ('added', 'updated', or 'removed').
+     * The type of change ('added', 'modified', or 'removed').
      *
      * @type {string}
      * @name DocumentChange#type
@@ -18486,7 +18486,7 @@ const REMOVED = {};
 // tslint:disable-next-line:variable-name
 const ChangeType = {
     added: 'added',
-    updated: 'updated',
+    modified: 'modified',
     removed: 'removed',
 };
 /*!
@@ -18955,7 +18955,7 @@ class Watch {
         if (!oldDocument.updateTime.isEqual(newDocument.updateTime)) {
             const removeChange = this.deleteDoc(name);
             const addChange = this.addDoc(newDocument);
-            return new document_change_1.DocumentChange(ChangeType.updated, newDocument, removeChange.oldIndex, addChange.newIndex);
+            return new document_change_1.DocumentChange(ChangeType.modified, newDocument, removeChange.oldIndex, addChange.newIndex);
         }
         return null;
     }

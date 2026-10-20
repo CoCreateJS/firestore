@@ -41,8 +41,7 @@
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./dist": "./dist/firestore.js",
-    "./installer": "./installer/firestore.installer.js"
+    "./dist": "./dist/firestore.js"
   },
   "devDependencies": {
     "@cocreate/webpack": "^1.9.0"
