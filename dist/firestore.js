@@ -1923,7 +1923,7 @@ class DocumentChange {
     /**
      * @private
      *
-     * @param {string} type 'added' | 'removed' | 'modified'.
+     * @param {string} type 'added' | 'removed' | 'updated'.
      * @param {QueryDocumentSnapshot} document The document.
      * @param {number} oldIndex The index in the documents array prior to this
      * change.
@@ -1937,7 +1937,7 @@ class DocumentChange {
         this._newIndex = newIndex;
     }
     /**
-     * The type of change ('added', 'modified', or 'removed').
+     * The type of change ('added', 'updated', or 'removed').
      *
      * @type {string}
      * @name DocumentChange#type
@@ -18486,7 +18486,7 @@ const REMOVED = {};
 // tslint:disable-next-line:variable-name
 const ChangeType = {
     added: 'added',
-    modified: 'modified',
+    updated: 'updated',
     removed: 'removed',
 };
 /*!
@@ -18955,7 +18955,7 @@ class Watch {
         if (!oldDocument.updateTime.isEqual(newDocument.updateTime)) {
             const removeChange = this.deleteDoc(name);
             const addChange = this.addDoc(newDocument);
-            return new document_change_1.DocumentChange(ChangeType.modified, newDocument, removeChange.oldIndex, addChange.newIndex);
+            return new document_change_1.DocumentChange(ChangeType.updated, newDocument, removeChange.oldIndex, addChange.newIndex);
         }
         return null;
     }
@@ -42859,7 +42859,7 @@ function object(method, data) {
                   _id: id,
                   organization_id: orgId,
                   created,
-                  modified: null,
+                  updated: null,
                   ...recordPayload
                 });
                 const savedDoc = await docRef.get();
@@ -42891,9 +42891,9 @@ function object(method, data) {
                   const docSnap = await docRef.get();
                   if (docSnap.exists) {
                     let dbRecord = docSnap.data();
-                    if ($storage.length && data[type][i].modified && data[type][i].modified.on) {
-                      let clientTime = new Date(data[type][i].modified.on);
-                      let dbTime = new Date(dbRecord.modified ? dbRecord.modified.on : 0);
+                    if ($storage.length && data[type][i].updated && data[type][i].updated.on) {
+                      let clientTime = new Date(data[type][i].updated.on);
+                      let dbTime = new Date(dbRecord.updated ? dbRecord.updated.on : 0);
                       if (clientTime > dbTime) {
                         const updatedRecord = { ...dbRecord, ...data[type][i] };
                         const savedRecord = await executeUpdateTransaction(db, array, data[type][i]._id, updatedRecord, data);
@@ -43119,7 +43119,7 @@ async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, re
           return null;
         }
       }
-      const modified = {
+      const updated = {
         on: new Date(requestData.timeStamp).toISOString(),
         by: requestData.user_id || requestData.clientId
       };
@@ -43128,12 +43128,12 @@ async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, re
       delete savePayload._id;
       delete savePayload.organization_id;
       delete savePayload.created;
-      delete savePayload.modified;
+      delete savePayload.updated;
       const recordToWrite = {
         _id: docId,
         organization_id: requestData.organization_id,
-        created: currentRecord.created || modified,
-        modified,
+        created: currentRecord.created || updated,
+        updated,
         ...savePayload
       };
       process.emit("usage", {

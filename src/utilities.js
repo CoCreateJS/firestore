@@ -169,7 +169,7 @@ async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, re
 				}
 			}
 
-			const modified = {
+			const updated = {
 				on: new Date(requestData.timeStamp).toISOString(),
 				by: requestData.user_id || requestData.clientId
 			};
@@ -180,13 +180,13 @@ async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, re
 			delete savePayload._id;
 			delete savePayload.organization_id;
 			delete savePayload.created;
-			delete savePayload.modified;
+			delete savePayload.updated;
 
 			const recordToWrite = {
 				_id: docId,
 				organization_id: requestData.organization_id,
-				created: currentRecord.created || modified,
-				modified,
+				created: currentRecord.created || updated,
+				updated,
 				...savePayload
 			};
 
