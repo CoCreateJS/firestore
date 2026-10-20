@@ -1,6 +1,6 @@
 {
   "name": "@cocreate/firestore",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Lightweight Google Cloud Firestore CRUD wrapper and multi-tenant state routing client for the CoCreate ecosystem.",
   "keywords": [
     "firestore",
