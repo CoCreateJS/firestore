@@ -42840,6 +42840,7 @@ function object(method, data) {
               if (method === "create") {
                 data[type][i] = replaceArray(data[type][i]);
                 data[type][i] = (0,_cocreate_utils__WEBPACK_IMPORTED_MODULE_0__/* .dotNotationToObject */ .O)(data[type][i]);
+                delete data[type][i].modified;
                 const id = data[type][i]._id || `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                 const orgId = data.organization_id;
                 const created = {
@@ -42849,6 +42850,8 @@ function object(method, data) {
                 const recordPayload = { ...data[type][i] };
                 delete recordPayload._id;
                 delete recordPayload.organization_id;
+                delete recordPayload.created;
+                delete recordPayload.updated;
                 const docRef = db.collection(array).doc(id);
                 process.emit("usage", {
                   type: "egress",
@@ -42859,7 +42862,7 @@ function object(method, data) {
                   _id: id,
                   organization_id: orgId,
                   created,
-                  updated: null,
+                  updated: created,
                   ...recordPayload
                 });
                 const savedDoc = await docRef.get();
@@ -43129,6 +43132,7 @@ async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, re
       delete savePayload.organization_id;
       delete savePayload.created;
       delete savePayload.updated;
+      delete savePayload.modified;
       const recordToWrite = {
         _id: docId,
         organization_id: requestData.organization_id,
