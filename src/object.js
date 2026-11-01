@@ -13,6 +13,8 @@ import {
 
 /**
  * "object" operations mapped to Firestore Documents.
+ * @private
+ * @environment server
  */
 function object(method, data) {
     const storageName = data.storageConfig?.name;

@@ -13,6 +13,8 @@ import {
 
 /**
  * "database" operations mapped to Firestore Databases.
+ * @private
+ * @environment server
  */
 function database(method, data) {
     const storageName = data.storageConfig?.name;

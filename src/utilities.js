@@ -30,6 +30,8 @@ const organizations = {};
  * Dynamically resolves or caches a long-lived Firestore database client connection.
  * Caches the connection promise to prevent duplicate authentication handshakes.
  * Accepts storage API credentials or a bootstrap URL.
+ * @private
+ * @environment server
  */
 async function dbClient(data) {
 	const storage = data.storageConfig;
@@ -153,6 +155,8 @@ process.on("orgDeleted", (organization_id) => {
 /**
  * Executes a state-safe transactional update pipeline matching MongoDB syntax operations inside Cloud Firestore.
  * Natively scales over concurrent race conditions utilizing Google Cloud's transactional isolation mechanics.
+ * @private
+ * @environment server
  */
 async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, requestData) {
 	const docRef = db.collection(arrayName).doc(docId);
@@ -208,6 +212,8 @@ async function executeUpdateTransaction(db, arrayName, docId, rawUpdateInput, re
 /**
  * Applies deep MongoDB modification operators ($set, $unset, $push, $pull, $addToSet, $inc)
  * recursively on a target record to maintain absolute system synchronization behaviors.
+ * @private
+ * @environment server
  */
 function applyMongoUpdate(record, updatePayload) {
 	let target = { ...record };
@@ -298,6 +304,8 @@ function applyMongoUpdate(record, updatePayload) {
 
 /**
  * Normalizes and compiles complex MongoDB logic filters cleanly into a chained Firestore Query reference structure.
+ * @private
+ * @environment server
  */
 function compileFilterToFirestore(queryRef, filter, organizationId) {
 	// Restrict and enforce organization scope limits uniformly
@@ -356,6 +364,8 @@ function deleteNestedValue(obj, path) {
 
 /**
  * Syncs active state blocks and updates values cleanly inside CoCreate payload objects.
+ * @private
+ * @environment server
  */
 function createData(data, array, type) {
 	if (data[type] && data[type][0] && data[type][0].isFilter === "isEmptyObjectFilter") {

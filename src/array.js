@@ -13,6 +13,8 @@ import {
 
 /**
  * "array" operations mapped to Firestore Collections.
+ * @private
+ * @environment server
  */
 function array(method, data) {
     const storageName = data.storageConfig?.name;
